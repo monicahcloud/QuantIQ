@@ -10,7 +10,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0 bg-[#041f3d]" />
 
       {/* IMAGE */}
-      <div className="absolute inset-y-0 right-0 z-[1] hidden w-[52%] overflow-hidden rounded-bl-[220px] xl:block 2xl:w-[56%]">
+      <div className="absolute inset-y-0 right-0 z-[1]  w-[52%] overflow-hidden rounded-bl-[220px] xl:block 2xl:w-[56%]">
         <Image
           src="/images/student.png"
           alt="Student learning"
