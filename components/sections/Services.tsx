@@ -43,7 +43,7 @@ export function Services() {
                     {service.text}
                   </p>
 
-                  <p className="mt-6 text-xs font-extrabold uppercase text-quantiq-sky">
+                  <p className={`mt-auto pt-8 font-bold ${service.textColor}`}>
                     Learn More →
                   </p>
                 </CardContent>

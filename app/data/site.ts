@@ -25,24 +25,28 @@ export const services = [
     title: "Academic Intervention",
     text: "Targeted support in literacy, math, executive functioning, study skills and more.",
     color: "bg-quantiq-navy",
+    textColor: "text-quantiq-navy",
   },
   {
     icon: CheckCircle2,
     title: "Assessments & Learning Support",
     text: "Comprehensive evaluations and individualized plans to guide student growth.",
     color: "bg-quantiq-sky",
+    textColor: "text-quantiq-sky",
   },
   {
     icon: Users,
     title: "Parent & Family Support",
     text: "Guidance, consultations, and resources to support the whole family.",
     color: "bg-quantiq-orange",
+    textColor: "text-quantiq-orange",
   },
   {
     icon: Brain,
     title: "Specialized Programs",
     text: "After-school labs, small group support, summer programs and neurodiverse support.",
     color: "bg-quantiq-lime",
+    textColor: "text-quantiq-lime",
   },
 ];
 
