@@ -30,8 +30,8 @@ const contactItems = [
   {
     icon: Mail,
     label: "Email",
-    value: "info@quantiqacademy.com",
-    href: "mailto:info@quantiqacademy.com",
+    value: "info@quantiqlearning.com",
+    href: "mailto:info@quantiqlearning.com",
   },
   {
     icon: MapPin,
