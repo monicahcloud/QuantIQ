@@ -5,7 +5,7 @@ import { services } from "@/app/data/site";
 export function Services() {
   return (
     <section className="px-6 py-10">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-8xl px-8">
         <div className="grid gap-10 lg:grid-cols-2">
           <SectionHeading
             eyebrow="What We Do"

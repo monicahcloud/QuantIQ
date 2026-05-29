@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <section className="relative min-h-[860px] overflow-hidden bg-[#021631] pt-8 md:pt-0 text-white">
+    <section className="relative overflow-hidden bg-[#021631] text-white">
       {/* BACKGROUND BASE */}
       <div className="absolute inset-0 z-0 bg-[#041f3d]" />
 
       {/* IMAGE */}
-      <div className="absolute right-[-90px] top-0 z-[1] h-[650px] w-[58%] overflow-hidden rounded-bl-[260px]">
+      <div className="absolute inset-y-0 right-0 z-[1] hidden w-[52%] overflow-hidden rounded-bl-[220px] xl:block 2xl:w-[56%]">
         <Image
           src="/images/student.png"
           alt="Student learning"
@@ -45,7 +45,7 @@ export function Hero() {
       </div>*/}
 
       {/* content */}
-      <div className="relative z-40 mx-auto flex min-h-[760px] max-w-7xl items-center px-6 pb-32 md:pb-20">
+      <div className="relative z-40 flex min-h-[760px] w-full items-center px-6 pb-28 pt-24 sm:px-10 lg:px-16 xl:min-h-[900px] xl:px-24 2xl:px-32">
         <div className="w-full max-w-[620px] xl:max-w-[920px]">
           <h1 className="text-6xl font-black leading-[0.95] tracking-tight text-white md:text-7xl lg:text-[92px]">
             Built for the <br />

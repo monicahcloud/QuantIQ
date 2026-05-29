@@ -17,7 +17,7 @@ export function Impact() {
       <div className="absolute inset-0 z-[2] bg-[linear-gradient(135deg,#041f3d_0%,#061f3f_48%,rgba(32,196,199,0.08)_100%)]" />
 
       {/* content */}
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-8xl px-8">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-quantiq-sky">
             Making An Impact

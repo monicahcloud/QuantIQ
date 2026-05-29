@@ -58,7 +58,7 @@ export function Footer() {
 
       <div className="absolute inset-0 z-[2] bg-[linear-gradient(135deg,#041f3d_0%,#061f3f_55%,rgba(32,196,199,0.08)_100%)]" />
 
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto w-full px-5">
         <div className="grid gap-12 lg:grid-cols-[1.25fr_0.8fr_0.9fr_1fr]">
           {/* Brand */}
           <div>

@@ -5,6 +5,7 @@ import { SupportAreas } from "@/components/sections/SupportAreas";
 import { Impact } from "@/components/sections/Impact";
 import { CTA } from "@/components/sections/CTA";
 import { Footer } from "@/components/sections/Footer";
+import { Partnerships } from "@/components/sections/Partnerships";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <Services />
       <SupportAreas />
       <Impact />
+      <Partnerships />
       <CTA />
       <Footer />
     </main>
