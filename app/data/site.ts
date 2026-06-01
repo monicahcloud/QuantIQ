@@ -10,13 +10,70 @@ import {
 } from "lucide-react";
 
 export const navLinks = [
-  "Home",
-  "About Us",
-  "Services",
-  "Programs",
-  "Resources",
-  "Partnerships",
-  "Contact",
+  {
+    label: "Home",
+    href: "/",
+  },
+  // {
+  //   label: "About Us",
+  //   href: "/about",
+  // },
+  {
+    label: "Services",
+    href: "null",
+    subLinks: [
+      {
+        label: "Academic Intervention Services",
+        href: "null",
+      },
+      {
+        label: "Assessments & Learning Evaluations",
+        href: "null",
+      },
+      {
+        label: "Specialized Learning Support",
+        href: "null",
+      },
+      {
+        label: "Parent & Family Support",
+        href: "null",
+      },
+      {
+        label: "School & Educational Consulting",
+        href: "null",
+      },
+      {
+        label: "Educational Workshops & Training",
+        href: "null",
+      },
+    ],
+  },
+  {
+    label: "Programs",
+    href: null,
+    subLinks: [
+      {
+        label: "Academic Boost Camp",
+        href: "/academic-boost-camp",
+      },
+      {
+        label: "STEM Programs",
+        href: "null",
+      },
+    ],
+  },
+  // {
+  //   label: "Resources",
+  //   href: "/resources",
+  // },
+  // {
+  //   label: "Partnerships",
+  //   href: "/partnerships",
+  // },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
 
 export const services = [

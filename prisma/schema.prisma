@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AcademicBoostLead {
+  id        String   @id @default(cuid())
+
+  parentName       String
+  parentEmail      String
+  parentPhone      String
+  preferredContact String?
+
+  studentName    String
+  studentAge     String?
+  gradeEntering  String
+  currentSchool  String?
+
+  programSelection String
+
+  academicConcerns String[]
+  academicNotes    String?
+  parentGoals      String?
+  medicalNotes     String?
+
+  emergencyContactName  String
+  emergencyContactPhone String
+
+  consent Boolean @default(false)
+  status  String  @default("new")
+  source  String  @default("Website Form")
+
+  formResponses Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -25,18 +25,37 @@ export function Navbar() {
 
         {/* DESKTOP NAVIGATION */}
         <nav className="hidden items-center gap-6 xl:gap-8 lg:flex">
-          {navLinks.map((link, index) => (
-            <Link
-              key={link}
-              href="/"
-              className={`text-xs font-bold uppercase tracking-[0.18em] transition-colors duration-200 hover:text-quantiq-sky ${
-                index === 0
-                  ? "border-b-2 border-quantiq-sky pb-2 text-white"
-                  : "text-white/85"
-              }`}>
-              {link}
-            </Link>
-          ))}
+          {navLinks.map((item, index) =>
+            item.subLinks ? (
+              <div key={item.label} className="group relative">
+                <button className="text-xs font-bold uppercase tracking-[0.18em] text-white/85 transition-colors duration-200 hover:text-quantiq-sky">
+                  {item.label}
+                </button>
+
+                <div className="invisible absolute left-0 top-full z-50 mt-4 w-80 rounded-2xl border border-white/10 bg-[#01132d] p-3 opacity-0 shadow-2xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                  {item.subLinks.map((subLink) => (
+                    <Link
+                      key={subLink.label}
+                      href={subLink.href}
+                      className="block rounded-xl px-4 py-3 text-sm font-bold text-white/85 transition hover:bg-white/10 hover:text-quantiq-sky">
+                      {subLink.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`text-xs font-bold uppercase tracking-[0.18em] transition-colors duration-200 hover:text-quantiq-sky ${
+                  index === 0
+                    ? "border-b-2 border-quantiq-sky pb-2 text-white"
+                    : "text-white/85"
+                }`}>
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         {/* DESKTOP CTA */}
@@ -67,18 +86,35 @@ export function Navbar() {
               </SheetHeader>
 
               <nav className="mt-10 flex flex-col gap-2">
-                {navLinks.map((link, index) => (
-                  <Link
-                    key={link}
-                    href="/"
-                    className={`rounded-2xl px-4 py-4 text-sm font-bold uppercase tracking-[0.16em] transition-colors hover:bg-white/10 hover:text-quantiq-sky ${
-                      index === 0
-                        ? "bg-white/10 text-quantiq-sky"
-                        : "text-white/85"
-                    }`}>
-                    {link}
-                  </Link>
-                ))}
+                {navLinks.map((item, index) =>
+                  item.subLinks ? (
+                    <div key={item.label} className="space-y-2">
+                      <div className="rounded-2xl px-4 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white/85">
+                        {item.label}
+                      </div>
+
+                      {item.subLinks.map((subLink) => (
+                        <Link
+                          key={subLink.href}
+                          href={subLink.href}
+                          className="ml-4 block rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-quantiq-sky transition-colors hover:bg-white/10">
+                          {subLink.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={`rounded-2xl px-4 py-4 text-sm font-bold uppercase tracking-[0.16em] transition-colors hover:bg-white/10 hover:text-quantiq-sky ${
+                        index === 0
+                          ? "bg-white/10 text-quantiq-sky"
+                          : "text-white/85"
+                      }`}>
+                      {item.label}
+                    </Link>
+                  ),
+                )}
               </nav>
 
               <Button className="mt-8 w-full rounded-full bg-quantiq-sky py-6 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-quantiq-sky/30 hover:bg-quantiq-sky/90">
