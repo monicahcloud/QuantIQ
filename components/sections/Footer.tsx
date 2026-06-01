@@ -7,21 +7,41 @@ const footerLinks = [
   {
     title: "Quick Links",
     links: [
-      { label: "About Us", href: "#about" },
-      { label: "Services", href: "#services" },
-      { label: "Programs", href: "#programs" },
-      { label: "Resources", href: "#resources" },
-      { label: "Partnerships", href: "#partnerships" },
-      { label: "Contact", href: "#contact" },
+      // { label: "About Us", href: "#about" },
+      { label: "Services", href: "null" },
+      { label: "Programs", href: "null" },
+      // // { label: "Resources", href: "#resources" },
+      // { label: "Partnerships", href: "#partnerships" },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {
     title: "Services",
     links: [
-      { label: "Academic Intervention", href: "#services" },
-      { label: "Assessments & Support", href: "#services" },
-      { label: "Parent & Family Support", href: "#services" },
-      { label: "Specialized Programs", href: "#services" },
+      {
+        label: "Academic Intervention Services",
+        href: "null",
+      },
+      {
+        label: "Assessments & Learning Evaluations",
+        href: "null",
+      },
+      {
+        label: "Specialized Learning Support",
+        href: "null",
+      },
+      {
+        label: "Parent & Family Support",
+        href: "null",
+      },
+      {
+        label: "School & Educational Consulting",
+        href: "null",
+      },
+      {
+        label: "Educational Workshops & Training",
+        href: "null",
+      },
     ],
   },
 ];
