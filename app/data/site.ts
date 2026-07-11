@@ -62,10 +62,10 @@ export const navLinks = [
       },
     ],
   },
-  // {
-  //   label: "Resources",
-  //   href: "/resources",
-  // },
+  {
+    label: "For Educators",
+    href: "/educator-studio",
+  },
   // {
   //   label: "Partnerships",
   //   href: "/partnerships",
