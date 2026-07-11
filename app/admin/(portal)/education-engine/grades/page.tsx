@@ -1,7 +1,8 @@
 import { Archive, GraduationCap, RotateCcw } from "lucide-react";
 
-import { archiveEducationLevel, restoreEducationLevel } from "./actions";
+import { archiveGradeLevel, restoreGradeLevel } from "./actions";
 
+import CreateGradeLevelForm from "@/components/admin/education-engine/grades/CreateGradeLevelForm";
 import AdminEmptyState from "@/components/admin/shared/AdminEmptyState";
 import AdminPageHeader from "@/components/admin/shared/AdminPageHeader";
 import AdminSearchBar from "@/components/admin/shared/AdminSearchBar";
@@ -10,24 +11,25 @@ import AdminTableShell from "@/components/admin/shared/AdminTableShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import prisma from "@/lib/prisma";
-import CreateEducationLevelForm from "@/components/admin/education-engine/education-levels/CreateEducationLevelForm";
 
-type EducationLevelsPageProps = {
+type GradeLevelsPageProps = {
   searchParams: Promise<{
     q?: string;
     country?: string;
+    level?: string;
   }>;
 };
 
-export default async function EducationLevelsPage({
+export default async function GradeLevelsPage({
   searchParams,
-}: EducationLevelsPageProps) {
-  const { q = "", country = "" } = await searchParams;
+}: GradeLevelsPageProps) {
+  const { q = "", country = "", level = "" } = await searchParams;
 
   const search = q.trim();
   const countryId = country.trim();
+  const educationLevelId = level.trim();
 
-  const [countries, educationLevels] = await Promise.all([
+  const [countries, educationLevels, gradeLevels] = await Promise.all([
     prisma.country.findMany({
       where: {
         status: "ACTIVE",
@@ -43,11 +45,39 @@ export default async function EducationLevelsPage({
 
     prisma.educationLevel.findMany({
       where: {
+        status: "ACTIVE",
+      },
+      select: {
+        id: true,
+        countryId: true,
+        name: true,
+        code: true,
+      },
+      orderBy: [
+        {
+          country: {
+            name: "asc",
+          },
+        },
+        {
+          sequence: "asc",
+        },
+      ],
+    }),
+
+    prisma.gradeLevel.findMany({
+      where: {
         ...(search
           ? {
               OR: [
                 {
                   name: {
+                    contains: search,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  code: {
                     contains: search,
                     mode: "insensitive",
                   },
@@ -62,9 +92,11 @@ export default async function EducationLevelsPage({
             }
           : {}),
 
-        ...(countryId
+        ...(countryId ? { countryId } : {}),
+
+        ...(educationLevelId
           ? {
-              countryId,
+              educationLevelId,
             }
           : {}),
       },
@@ -72,15 +104,21 @@ export default async function EducationLevelsPage({
       include: {
         country: {
           select: {
-            id: true,
             name: true,
             iso2Code: true,
           },
         },
 
+        educationLevel: {
+          select: {
+            name: true,
+            code: true,
+          },
+        },
+
         _count: {
           select: {
-            gradeLevels: true,
+            subjectMappings: true,
           },
         },
       },
@@ -98,22 +136,33 @@ export default async function EducationLevelsPage({
     }),
   ]);
 
+  const filteredLevelOptions = countryId
+    ? educationLevels.filter(
+        (educationLevel) => educationLevel.countryId === countryId,
+      )
+    : educationLevels;
+
   return (
     <div className="mx-auto max-w-[1500px] space-y-7">
       <AdminPageHeader
         eyebrow="Education Engine"
-        title="Education Levels"
-        description="Manage country-specific education stages such as Preschool, Primary, and High School."
+        title="Grade Levels"
+        description="Manage country-specific grades and assign each grade to its correct education level."
         backHref="/admin/education-engine"
-        actions={<CreateEducationLevelForm countries={countries} />}
+        actions={
+          <CreateGradeLevelForm
+            countries={countries}
+            educationLevels={educationLevels}
+          />
+        }
       />
 
       <AdminTableShell
         toolbar={
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <AdminSearchBar
               defaultValue={search}
-              placeholder="Search education levels..."
+              placeholder="Search grade levels..."
             />
 
             <form className="flex flex-col gap-3 sm:flex-row">
@@ -132,35 +181,49 @@ export default async function EducationLevelsPage({
                 ))}
               </select>
 
+              <select
+                name="level"
+                defaultValue={educationLevelId}
+                className="h-12 min-w-52 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                <option value="">All education levels</option>
+
+                {filteredLevelOptions.map((levelOption) => (
+                  <option key={levelOption.id} value={levelOption.id}>
+                    {levelOption.name}
+                  </option>
+                ))}
+              </select>
+
               <Button type="submit" variant="outline">
-                Apply Filter
+                Apply Filters
               </Button>
             </form>
           </div>
         }>
-        {educationLevels.length === 0 ? (
+        {gradeLevels.length === 0 ? (
           <AdminEmptyState
             icon={GraduationCap}
-            title="No education levels found"
-            description="Add an education level or change the current search and filter criteria."
+            title="No grade levels found"
+            description="Add a grade level or adjust the current filters."
           />
         ) : (
-          <table className="w-full min-w-[950px]">
+          <table className="w-full min-w-[1050px]">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
-                <TableHeading>Education level</TableHeading>
+                <TableHeading>Grade</TableHeading>
                 <TableHeading>Country</TableHeading>
+                <TableHeading>Education level</TableHeading>
                 <TableHeading>Code</TableHeading>
                 <TableHeading>Sequence</TableHeading>
-                <TableHeading>Grades</TableHeading>
+                <TableHeading>Subjects</TableHeading>
                 <TableHeading>Status</TableHeading>
                 <TableHeading className="text-right">Actions</TableHeading>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              {educationLevels.map((level) => (
-                <tr key={level.id} className="transition hover:bg-slate-50/70">
+              {gradeLevels.map((grade) => (
+                <tr key={grade.id} className="transition hover:bg-slate-50/70">
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
@@ -169,11 +232,11 @@ export default async function EducationLevelsPage({
 
                       <div>
                         <p className="font-black text-[#071d4e]">
-                          {level.name}
+                          {grade.name}
                         </p>
 
                         <p className="mt-1 text-xs text-slate-500">
-                          {level.description || level.slug}
+                          {grade.slug}
                         </p>
                       </div>
                     </div>
@@ -181,41 +244,51 @@ export default async function EducationLevelsPage({
 
                   <td className="px-6 py-5">
                     <p className="text-sm font-bold text-slate-700">
-                      {level.country.name}
+                      {grade.country.name}
                     </p>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {level.country.iso2Code}
+                      {grade.country.iso2Code}
                     </p>
                   </td>
 
                   <td className="px-6 py-5">
-                    <Badge variant="secondary">{formatCode(level.code)}</Badge>
+                    <Badge variant="secondary">
+                      {grade.educationLevel.name}
+                    </Badge>
                   </td>
 
                   <td className="px-6 py-5">
-                    <span className="text-sm font-black text-slate-700">
-                      {level.sequence}
-                    </span>
+                    <Badge variant="outline">{grade.code}</Badge>
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <p className="text-sm font-black text-slate-700">
+                      {grade.sequence}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      Numeric: {grade.numericGrade ?? "—"}
+                    </p>
                   </td>
 
                   <td className="px-6 py-5">
                     <p className="text-sm font-bold text-slate-700">
-                      {level._count.gradeLevels}
+                      {grade._count.subjectMappings}
                     </p>
                   </td>
 
                   <td className="px-6 py-5">
-                    <AdminStatusBadge status={level.status} />
+                    <AdminStatusBadge status={grade.status} />
                   </td>
 
                   <td className="px-6 py-5 text-right">
-                    {level.status === "ARCHIVED" ? (
-                      <form action={restoreEducationLevel}>
+                    {grade.status === "ARCHIVED" ? (
+                      <form action={restoreGradeLevel}>
                         <input
                           type="hidden"
-                          name="educationLevelId"
-                          value={level.id}
+                          name="gradeLevelId"
+                          value={grade.id}
                         />
 
                         <Button type="submit" size="sm" variant="outline">
@@ -224,11 +297,11 @@ export default async function EducationLevelsPage({
                         </Button>
                       </form>
                     ) : (
-                      <form action={archiveEducationLevel}>
+                      <form action={archiveGradeLevel}>
                         <input
                           type="hidden"
-                          name="educationLevelId"
-                          value={level.id}
+                          name="gradeLevelId"
+                          value={grade.id}
                         />
 
                         <Button
@@ -265,11 +338,4 @@ function TableHeading({
       {children}
     </th>
   );
-}
-
-function formatCode(code: string) {
-  return code
-    .toLowerCase()
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
 }

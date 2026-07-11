@@ -141,6 +141,8 @@ model Country {
   gradeLevels     GradeLevel[]
   subjects        Subject[]
   academicYears   AcademicYear[]
+  calendarEvents  CalendarEvent[]
+  calendarSetting AcademicCalendarSetting?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -164,8 +166,9 @@ model EducationAuthority {
   phone       String?
   status      RecordStatus  @default(ACTIVE)
 
-  organizations Organization[]
-  schools       School[]
+  organizations  Organization[]
+  schools        School[]
+  calendarEvents CalendarEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -199,7 +202,8 @@ model Organization {
   phone       String?
   status      RecordStatus     @default(ACTIVE)
 
-  schools School[]
+  schools        School[]
+  calendarEvents CalendarEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -240,7 +244,8 @@ model School {
   email      String?
   phone      String?
 
-  status RecordStatus @default(ACTIVE)
+  status         RecordStatus    @default(ACTIVE)
+  calendarEvents CalendarEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -370,8 +375,9 @@ model AcademicYear {
   isCurrent Boolean      @default(false)
   status    RecordStatus @default(ACTIVE)
 
-  periods AcademicPeriod[]
-  weeks   AcademicWeek[]
+  periods        AcademicPeriod[]
+  weeks          AcademicWeek[]
+  calendarEvents CalendarEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -434,4 +440,112 @@ model AcademicWeek {
   @@index([academicPeriodId])
   @@index([isInstructional])
   @@index([status])
+}
+
+enum CalendarEventType {
+  PUBLIC_HOLIDAY
+  SCHOOL_HOLIDAY
+  SCHOOL_BREAK
+  PROFESSIONAL_DEVELOPMENT
+  TEACHER_WORKDAY
+  EXAM_PERIOD
+  NATIONAL_ASSESSMENT
+  PARENT_CONFERENCE
+  ORIENTATION
+  SPORTS_DAY
+  CULTURAL_EVENT
+  GRADUATION
+  MINISTRY_EVENT
+  SCHOOL_CLOSURE
+  EMERGENCY_CLOSURE
+  WEATHER_EVENT
+  OTHER
+}
+
+enum CalendarEventScope {
+  COUNTRY
+  AUTHORITY
+  ORGANIZATION
+  SCHOOL
+}
+
+model CalendarEvent {
+  id String @id @default(cuid())
+
+  countryId String
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  authorityId String?
+  authority   EducationAuthority? @relation(fields: [authorityId], references: [id], onDelete: SetNull)
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+
+  eventType CalendarEventType
+  scope     CalendarEventScope @default(COUNTRY)
+
+  startDate DateTime
+  endDate   DateTime
+  allDay    Boolean  @default(true)
+
+  isInstructional       Boolean @default(false)
+  affectsPacing         Boolean @default(true)
+  affectsForecast       Boolean @default(true)
+  affectsAttendance     Boolean @default(false)
+  affectsAssessments    Boolean @default(false)
+  affectsLessonPlanning Boolean @default(true)
+
+  color String?
+  notes String?
+
+  status RecordStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([countryId])
+  @@index([academicYearId])
+  @@index([authorityId])
+  @@index([organizationId])
+  @@index([schoolId])
+  @@index([eventType])
+  @@index([scope])
+  @@index([startDate, endDate])
+  @@index([status])
+}
+
+model AcademicCalendarSetting {
+  id String @id @default(cuid())
+
+  countryId String  @unique
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  weekStartsOn WeekStartDay @default(MONDAY)
+
+  instructionalDays Int[] @default([1, 2, 3, 4, 5])
+
+  defaultPeriodType AcademicPeriodType @default(TERM)
+
+  defaultLocale   String @default("en-BS")
+  defaultTimeZone String @default("America/Nassau")
+
+  autoAssignWeeksToTerms       Boolean @default(true)
+  outsideTermsNonInstructional Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WeekStartDay {
+  MONDAY
+  SUNDAY
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpenCheck,
   Building2,
   CalendarDays,
   CalendarRange,
@@ -77,16 +78,31 @@ const modules = [
   {
     title: "Terms",
     description: "Manage terms, semesters, quarters, and other periods.",
-    href: "/admin/education-engine/terms",
+    href: "/admin/education-engine/academic-calendar/terms",
     icon: CalendarDays,
     countKey: "terms",
   },
   {
     title: "Weeks",
     description: "Manage instructional and non-instructional academic weeks.",
-    href: "/admin/education-engine/weeks",
+    href: "/admin/education-engine/academic-calendar/weeks",
     icon: Clock3,
     countKey: "weeks",
+  },
+  {
+    title: "Grade–Subject Mapping",
+    description: "Assign subjects to the grade levels where they are taught.",
+    href: "/admin/education-engine/grade-subjects",
+    icon: BookOpenCheck,
+    countKey: "gradeSubjects",
+  },
+  {
+    title: "Academic Calendar",
+    description:
+      "Manage academic years, terms, weeks, holidays, and instructional schedules.",
+    href: "/admin/education-engine/academic-calendar",
+    icon: CalendarRange,
+    countKey: "academicYears",
   },
 ] as const;
 
@@ -102,6 +118,7 @@ export default async function EducationEnginePage() {
     academicYears,
     terms,
     weeks,
+    gradeSubjects,
   ] = await prisma.$transaction([
     prisma.country.count(),
     prisma.educationAuthority.count(),
@@ -113,6 +130,11 @@ export default async function EducationEnginePage() {
     prisma.academicYear.count(),
     prisma.academicPeriod.count(),
     prisma.academicWeek.count(),
+    prisma.gradeSubject.count({
+      where: {
+        status: "ACTIVE",
+      },
+    }),
   ]);
 
   const counts = {
@@ -126,15 +148,12 @@ export default async function EducationEnginePage() {
     academicYears,
     terms,
     weeks,
+    gradeSubjects,
   };
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-8">
       <header>
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">
-          QuantIQ Administration
-        </p>
-
         <h1 className="mt-2 text-3xl font-black tracking-[-0.03em] text-[#071d4e] sm:text-4xl">
           Education Engine
         </h1>
