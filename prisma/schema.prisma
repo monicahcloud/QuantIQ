@@ -145,6 +145,7 @@ model Country {
   calendarSetting         AcademicCalendarSetting?
   administrativeDivisions AdministrativeDivision[]
   localities              Locality[]
+  curriculumVersions      CurriculumVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -174,8 +175,9 @@ model EducationAuthority {
   administrativeDivisionId String?
   administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
 
-  localityId String?
-  locality   Locality? @relation(fields: [localityId], references: [id], onDelete: SetNull)
+  localityId         String?
+  locality           Locality?           @relation(fields: [localityId], references: [id], onDelete: SetNull)
+  curriculumVersions CurriculumVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -216,8 +218,9 @@ model Organization {
   administrativeDivisionId String?
   administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
 
-  localityId String?
-  locality   Locality? @relation(fields: [localityId], references: [id], onDelete: SetNull)
+  localityId         String?
+  locality           Locality?           @relation(fields: [localityId], references: [id], onDelete: SetNull)
+  curriculumVersions CurriculumVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -252,6 +255,7 @@ model School {
 
   administrativeDivisionId String?
   administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
+  curriculumVersions       CurriculumVersion[]
 
   localityId   String?
   locality     Locality? @relation(fields: [localityId], references: [id], onDelete: SetNull)
@@ -294,7 +298,8 @@ model EducationLevel {
   sequence    Int
   status      RecordStatus       @default(ACTIVE)
 
-  gradeLevels GradeLevel[]
+  gradeLevels        GradeLevel[]
+  curriculumPackages CurriculumPackage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -322,7 +327,8 @@ model GradeLevel {
   sequence     Int
   status       RecordStatus @default(ACTIVE)
 
-  subjectMappings GradeSubject[]
+  subjectMappings    GradeSubject[]
+  curriculumPackages CurriculumPackage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -348,7 +354,8 @@ model Subject {
   sequence    Int
   status      RecordStatus @default(ACTIVE)
 
-  gradeMappings GradeSubject[]
+  gradeMappings      GradeSubject[]
+  curriculumPackages CurriculumPackage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -617,10 +624,11 @@ model AdministrativeDivision {
   sequence    Int?
   status      RecordStatus @default(ACTIVE)
 
-  localities    Locality[]
-  authorities   EducationAuthority[]
-  organizations Organization[]
-  schools       School[]
+  localities         Locality[]
+  authorities        EducationAuthority[]
+  organizations      Organization[]
+  schools            School[]
+  curriculumVersions CurriculumVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -669,4 +677,433 @@ model Locality {
   @@index([administrativeDivisionId])
   @@index([type])
   @@index([status])
+}
+
+model CurriculumVersion {
+  id           String @id @default(cuid())
+  languageCode String @default("en")
+
+  countryId String
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Restrict)
+
+  administrativeDivisionId String?
+  administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
+
+  authorityId String?
+  authority   EducationAuthority? @relation(fields: [authorityId], references: [id], onDelete: SetNull)
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+
+  name         String
+  code         String
+  slug         String
+  versionLabel String?
+
+  scope CurriculumScope @default(COUNTRY)
+
+  description String?
+  notes       String?
+
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  publishedAt   DateTime?
+
+  isCurrent Boolean @default(false)
+
+  status CurriculumVersionStatus @default(DRAFT)
+
+  frameworks CurriculumFramework[]
+  documents  CurriculumDocument[]
+  importRuns CurriculumImportRun[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryId, slug])
+  @@unique([countryId, code])
+  @@index([countryId])
+  @@index([administrativeDivisionId])
+  @@index([authorityId])
+  @@index([organizationId])
+  @@index([schoolId])
+  @@index([scope])
+  @@index([status])
+  @@index([isCurrent])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+enum CurriculumScope {
+  COUNTRY
+  ADMINISTRATIVE_DIVISION
+  AUTHORITY
+  ORGANIZATION
+  SCHOOL
+}
+
+enum CurriculumVersionStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  PUBLISHED
+  RETIRED
+  ARCHIVED
+}
+
+enum CurriculumDocumentType {
+  CURRICULUM
+  PACING_GUIDE
+  SCOPE_AND_SEQUENCE
+  STANDARDS
+  FRAMEWORK
+  ASSESSMENT_GUIDE
+  TEACHER_GUIDE
+  RESOURCE_GUIDE
+  OTHER
+}
+
+enum CurriculumImportStatus {
+  PENDING
+  PROCESSING
+  REVIEW_REQUIRED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model CurriculumFramework {
+  id String @id @default(cuid())
+
+  curriculumVersionId String
+  curriculumVersion   CurriculumVersion @relation(fields: [curriculumVersionId], references: [id], onDelete: Cascade)
+
+  name String
+  code String?
+  slug String
+
+  description String?
+
+  sequence Int?
+
+  status RecordStatus @default(ACTIVE)
+
+  packages CurriculumPackage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([curriculumVersionId, slug])
+  @@index([curriculumVersionId])
+  @@index([status])
+}
+
+model CurriculumPackage {
+  id String @id @default(cuid())
+
+  curriculumFrameworkId String
+  curriculumFramework   CurriculumFramework @relation(fields: [curriculumFrameworkId], references: [id], onDelete: Cascade)
+
+  gradeLevelId String
+  gradeLevel   GradeLevel @relation(fields: [gradeLevelId], references: [id], onDelete: Restrict)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  educationLevelId String
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id], onDelete: Restrict)
+
+  name        String
+  code        String?
+  description String?
+
+  sequence Int?
+  status   RecordStatus @default(ACTIVE)
+
+  documents  CurriculumDocument[]
+  importRuns CurriculumImportRun[]
+  nodes      CurriculumNode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([curriculumFrameworkId, gradeLevelId, subjectId])
+  @@index([curriculumFrameworkId])
+  @@index([educationLevelId])
+  @@index([gradeLevelId])
+  @@index([subjectId])
+  @@index([status])
+}
+
+model CurriculumDocument {
+  id String @id @default(cuid())
+
+  curriculumVersionId String
+  curriculumVersion   CurriculumVersion @relation(fields: [curriculumVersionId], references: [id], onDelete: Cascade)
+
+  curriculumPackageId String?
+  curriculumPackage   CurriculumPackage? @relation(fields: [curriculumPackageId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+
+  documentType CurriculumDocumentType
+
+  originalFileName String
+  storedFileName   String?
+  fileUrl          String
+  storageKey       String?
+
+  mimeType  String?
+  sizeBytes Int?
+  checksum  String?
+
+  issuedDate     DateTime?
+  effectiveDate  DateTime?
+  expirationDate DateTime?
+
+  isPrimarySource Boolean @default(false)
+
+  status RecordStatus @default(ACTIVE)
+
+  importRuns      CurriculumImportRun[]
+  curriculumNodes CurriculumNode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([curriculumVersionId])
+  @@index([curriculumPackageId])
+  @@index([documentType])
+  @@index([isPrimarySource])
+  @@index([status])
+}
+
+model CurriculumImportRun {
+  id String @id @default(cuid())
+
+  curriculumVersionId String
+  curriculumVersion   CurriculumVersion @relation(fields: [curriculumVersionId], references: [id], onDelete: Cascade)
+
+  curriculumPackageId String?
+  curriculumPackage   CurriculumPackage? @relation(fields: [curriculumPackageId], references: [id], onDelete: SetNull)
+
+  curriculumDocumentId String
+  curriculumDocument   CurriculumDocument @relation(fields: [curriculumDocumentId], references: [id], onDelete: Cascade)
+
+  initiatedByClerkUserId String?
+
+  status CurriculumImportStatus @default(PENDING)
+  extraction CurriculumExtraction?
+
+  extractionProvider String?
+  extractionModel    String?
+
+  totalPages     Int?
+  processedPages Int? @default(0)
+
+  extractedData  Json?
+  validationData Json?
+  importSummary  Json?
+
+  errorMessage String?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([curriculumVersionId])
+  @@index([curriculumPackageId])
+  @@index([curriculumDocumentId])
+  @@index([status])
+  @@index([initiatedByClerkUserId])
+}
+
+enum CurriculumNodeType {
+  DOMAIN
+  STRAND
+  STANDARD
+  BENCHMARK
+  OBJECTIVE
+  OUTCOME
+  EXPECTATION
+  SUCCESS_CRITERIA
+  VOCABULARY
+  ESSENTIAL_QUESTION
+  BIG_IDEA
+  MISCONCEPTION
+  KEY_SKILL
+  COMPETENCY
+  CONTENT
+  TOPIC
+  SUBTOPIC
+  INDICATOR
+  LEARNING_TARGET
+  OTHER
+}
+
+model CurriculumNode {
+  id String @id @default(cuid())
+
+  curriculumPackageId String
+  curriculumPackage   CurriculumPackage @relation(fields: [curriculumPackageId], references: [id], onDelete: Cascade)
+
+  parentNodeId String?
+  parentNode   CurriculumNode? @relation("CurriculumNodeHierarchy", fields: [parentNodeId], references: [id], onDelete: SetNull)
+
+  childNodes CurriculumNode[] @relation("CurriculumNodeHierarchy")
+
+  sourceDocumentId String?
+  sourceDocument   CurriculumDocument? @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+
+  nodeType CurriculumNodeType
+
+  title       String
+  code        String?
+  description String?
+
+  /// Exact wording from the official curriculum source.
+  officialText String? @db.Text
+
+  sequence Int @default(1)
+  depth    Int @default(0)
+
+  /// Example: /root-node-id/child-node-id/current-node-id/
+  materializedPath String?
+
+  isRequired   Boolean @default(true)
+  isAssessable Boolean @default(false)
+
+  bloomsLevel BloomsLevel?
+  difficulty  DifficultyLevel?
+
+  estimatedMinutes Int?
+
+  /// Page number in the original curriculum document.
+  sourcePage Int?
+
+  /// Section heading or chapter from the source document.
+  sourceSection String?
+
+  metadata Json?
+
+  status RecordStatus @default(ACTIVE)
+
+  outgoingRelationships CurriculumRelationship[] @relation("CurriculumRelationshipFrom")
+
+  incomingRelationships CurriculumRelationship[] @relation("CurriculumRelationshipTo")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([curriculumPackageId])
+  @@index([parentNodeId])
+  @@index([sourceDocumentId])
+  @@index([nodeType])
+  @@index([code])
+  @@index([sequence])
+  @@index([depth])
+  @@index([bloomsLevel])
+  @@index([difficulty])
+  @@index([isAssessable])
+  @@index([status])
+}
+
+enum BloomsLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
+}
+
+enum DifficultyLevel {
+  FOUNDATIONAL
+  DEVELOPING
+  PROFICIENT
+  ADVANCED
+}
+
+enum CurriculumRelationshipType {
+  PREREQUISITE
+  RELATED
+  REINFORCES
+  SPIRALS_TO
+  CROSS_CURRICULAR
+  SUPPORTS
+  EXTENDS
+  ASSESSES_WITH
+  EQUIVALENT_TO
+  REPLACES
+  OTHER
+}
+
+model CurriculumRelationship {
+  id String @id @default(cuid())
+
+  fromNodeId String
+  fromNode   CurriculumNode @relation("CurriculumRelationshipFrom", fields: [fromNodeId], references: [id], onDelete: Cascade)
+
+  toNodeId String
+  toNode   CurriculumNode @relation("CurriculumRelationshipTo", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  relationshipType CurriculumRelationshipType
+
+  description String?
+
+  weight Decimal? @db.Decimal(5, 2)
+
+  metadata Json?
+
+  status RecordStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([fromNodeId, toNodeId, relationshipType])
+  @@index([fromNodeId])
+  @@index([toNodeId])
+  @@index([relationshipType])
+  @@index([status])
+}
+
+model CurriculumExtraction {
+  id String @id @default(cuid())
+
+  importRunId String
+  importRun CurriculumImportRun @relation(fields: [importRunId], references: [id], onDelete: Cascade)
+
+  rawJson Json
+
+  confidence Float?
+
+  warnings Json?
+
+  aiProvider String?
+  aiModel String?
+
+  processingTimeMs Int?
+
+  status ExtractionStatus @default(PENDING)
+
+  reviewedAt DateTime?
+  reviewedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([importRunId])
+}
+
+enum ExtractionStatus {
+  PENDING
+  REVIEW_REQUIRED
+  APPROVED
+  REJECTED
+  FAILED
 }

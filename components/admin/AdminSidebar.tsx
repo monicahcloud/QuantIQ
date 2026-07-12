@@ -30,7 +30,7 @@ const primaryNavigation = [
   },
   {
     label: "Curriculum",
-    href: "/admin/curriculum",
+    href: "/admin/curriculum-engine",
     icon: LibraryBig,
   },
   {

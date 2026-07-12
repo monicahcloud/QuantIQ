@@ -135,7 +135,7 @@ export default async function AdminDashboardPage() {
         <DashboardCard
           title="Curriculum Management"
           description="Curriculum versioning, source documents, standards, objectives, and instructional content."
-          href="/admin/curriculum"
+          href="/admin/curriculum-engine"
           icon={LibraryBig}
         />
       </section>
