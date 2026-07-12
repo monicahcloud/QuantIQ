@@ -6,15 +6,11 @@ import { usePathname } from "next/navigation";
 import {
   BookOpenCheck,
   Bot,
-  Building2,
   CalendarDays,
   Files,
   Gauge,
-  Globe2,
-  GraduationCap,
   LayoutDashboard,
   LibraryBig,
-  School,
   Settings,
   Users,
 } from "lucide-react";
@@ -42,24 +38,24 @@ const primaryNavigation = [
     href: "/admin/pacing-guides",
     icon: CalendarDays,
   },
-  {
-    label: "Resources",
-    href: "/admin/resources",
-    icon: Files,
-  },
+  // {
+  //   label: "Resources",
+  //   href: "/admin/resources",
+  //   icon: Files,
+  // },
 ];
 
 const managementNavigation = [
-  {
-    label: "Organizations",
-    href: "/admin/organizations",
-    icon: Building2,
-  },
-  {
-    label: "Schools",
-    href: "/admin/schools",
-    icon: School,
-  },
+  // {
+  //   label: "Organizations",
+  //   href: "/admin/organizations",
+  //   icon: Building2,
+  // },
+  // {
+  //   label: "Schools",
+  //   href: "/admin/schools",
+  //   icon: School,
+  // },
   {
     label: "Users",
     href: "/admin/users",
@@ -124,7 +120,7 @@ export default function AdminSidebar() {
 
           <p className="mt-2 text-sm leading-6 text-blue-100/80">
             Manage the countries, grades, subjects, calendars, curricula, and
-            pacing information that power QuantIQ.
+            pacing information that power QuantIQ Education Studio.
           </p>
 
           <Link

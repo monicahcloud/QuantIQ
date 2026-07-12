@@ -134,15 +134,17 @@ model Country {
   defaultTimeZone String?
   status          RecordStatus @default(ACTIVE)
 
-  authorities     EducationAuthority[]
-  organizations   Organization[]
-  schools         School[]
-  educationLevels EducationLevel[]
-  gradeLevels     GradeLevel[]
-  subjects        Subject[]
-  academicYears   AcademicYear[]
-  calendarEvents  CalendarEvent[]
-  calendarSetting AcademicCalendarSetting?
+  authorities             EducationAuthority[]
+  organizations           Organization[]
+  schools                 School[]
+  educationLevels         EducationLevel[]
+  gradeLevels             GradeLevel[]
+  subjects                Subject[]
+  academicYears           AcademicYear[]
+  calendarEvents          CalendarEvent[]
+  calendarSetting         AcademicCalendarSetting?
+  administrativeDivisions AdministrativeDivision[]
+  localities              Locality[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -166,9 +168,14 @@ model EducationAuthority {
   phone       String?
   status      RecordStatus  @default(ACTIVE)
 
-  organizations  Organization[]
-  schools        School[]
-  calendarEvents CalendarEvent[]
+  organizations            Organization[]
+  schools                  School[]
+  calendarEvents           CalendarEvent[]
+  administrativeDivisionId String?
+  administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
+
+  localityId String?
+  locality   Locality? @relation(fields: [localityId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,6 +184,8 @@ model EducationAuthority {
   @@index([countryId])
   @@index([type])
   @@index([status])
+  @@index([administrativeDivisionId])
+  @@index([localityId])
 }
 
 model Organization {
@@ -202,8 +211,13 @@ model Organization {
   phone       String?
   status      RecordStatus     @default(ACTIVE)
 
-  schools        School[]
-  calendarEvents CalendarEvent[]
+  schools                  School[]
+  calendarEvents           CalendarEvent[]
+  administrativeDivisionId String?
+  administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
+
+  localityId String?
+  locality   Locality? @relation(fields: [localityId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,6 +228,8 @@ model Organization {
   @@index([parentOrganizationId])
   @@index([type])
   @@index([status])
+  @@index([administrativeDivisionId])
+  @@index([localityId])
 }
 
 model School {
@@ -234,11 +250,14 @@ model School {
   type        SchoolType
   description String?
 
-  islandOrRegion String?
-  city           String?
-  addressLine1   String?
-  addressLine2   String?
-  postalCode     String?
+  administrativeDivisionId String?
+  administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id], onDelete: SetNull)
+
+  localityId   String?
+  locality     Locality? @relation(fields: [localityId], references: [id], onDelete: SetNull)
+  addressLine1 String?
+  addressLine2 String?
+  postalCode   String?
 
   websiteUrl String?
   email      String?
@@ -257,6 +276,8 @@ model School {
   @@index([organizationId])
   @@index([type])
   @@index([status])
+  @@index([administrativeDivisionId])
+  @@index([localityId])
 }
 
 model EducationLevel {
@@ -548,4 +569,104 @@ model AcademicCalendarSetting {
 enum WeekStartDay {
   MONDAY
   SUNDAY
+}
+
+enum AdministrativeDivisionType {
+  ISLAND
+  STATE
+  PROVINCE
+  PARISH
+  REGION
+  COUNTY
+  TERRITORY
+  DISTRICT
+  DEPARTMENT
+  MUNICIPALITY
+  OTHER
+}
+
+enum LocalityType {
+  CITY
+  TOWN
+  SETTLEMENT
+  VILLAGE
+  DISTRICT
+  MUNICIPALITY
+  COMMUNITY
+  OTHER
+}
+
+model AdministrativeDivision {
+  id String @id @default(cuid())
+
+  countryId String
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  parentDivisionId String?
+  parentDivision   AdministrativeDivision? @relation("AdministrativeDivisionHierarchy", fields: [parentDivisionId], references: [id], onDelete: SetNull)
+
+  childDivisions AdministrativeDivision[] @relation("AdministrativeDivisionHierarchy")
+
+  name String
+  code String?
+  slug String
+
+  type AdministrativeDivisionType
+
+  description String?
+  sequence    Int?
+  status      RecordStatus @default(ACTIVE)
+
+  localities    Locality[]
+  authorities   EducationAuthority[]
+  organizations Organization[]
+  schools       School[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryId, slug])
+  @@unique([countryId, code])
+  @@index([countryId])
+  @@index([parentDivisionId])
+  @@index([type])
+  @@index([status])
+}
+
+model Locality {
+  id String @id @default(cuid())
+
+  countryId String
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  administrativeDivisionId String
+  administrativeDivision   AdministrativeDivision @relation(fields: [administrativeDivisionId], references: [id], onDelete: Cascade)
+
+  name String
+  code String?
+  slug String
+
+  type LocalityType
+
+  description String?
+  postalCode  String?
+  latitude    Decimal? @db.Decimal(10, 7)
+  longitude   Decimal? @db.Decimal(10, 7)
+
+  sequence Int?
+  status   RecordStatus @default(ACTIVE)
+
+  authorities   EducationAuthority[]
+  organizations Organization[]
+  schools       School[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryId, slug])
+  @@unique([administrativeDivisionId, name])
+  @@index([countryId])
+  @@index([administrativeDivisionId])
+  @@index([type])
+  @@index([status])
 }

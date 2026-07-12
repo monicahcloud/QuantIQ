@@ -2,6 +2,14 @@ import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../lib/generated/prisma/client";
+import type { LocalityType } from "../lib/generated/prisma/client";
+
+type BahamasLocalitySeed = {
+  divisionSlug: string;
+  name: string;
+  slug: string;
+  type: LocalityType;
+};
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -530,6 +538,123 @@ async function main() {
         startDate,
         endDate,
         isInstructional: Boolean(period),
+        status: "ACTIVE",
+      },
+    });
+  }
+  const bahamasDivisions = [
+    { name: "New Providence", slug: "new-providence", code: "NP", sequence: 1 },
+    { name: "Grand Bahama", slug: "grand-bahama", code: "GB", sequence: 2 },
+    { name: "Abaco", slug: "abaco", code: "AB", sequence: 3 },
+    { name: "Andros", slug: "andros", code: "AN", sequence: 4 },
+    { name: "Eleuthera", slug: "eleuthera", code: "EL", sequence: 5 },
+    { name: "Exuma", slug: "exuma", code: "EX", sequence: 6 },
+    { name: "Long Island", slug: "long-island", code: "LI", sequence: 7 },
+    { name: "Cat Island", slug: "cat-island", code: "CI", sequence: 8 },
+    { name: "San Salvador", slug: "san-salvador", code: "SS", sequence: 9 },
+    { name: "Acklins", slug: "acklins", code: "AC", sequence: 10 },
+    {
+      name: "Crooked Island",
+      slug: "crooked-island",
+      code: "CR",
+      sequence: 11,
+    },
+    { name: "Mayaguana", slug: "mayaguana", code: "MY", sequence: 12 },
+    { name: "Inagua", slug: "inagua", code: "IN", sequence: 13 },
+    { name: "Bimini", slug: "bimini", code: "BI", sequence: 14 },
+    { name: "Berry Islands", slug: "berry-islands", code: "BE", sequence: 15 },
+    { name: "Ragged Island", slug: "ragged-island", code: "RI", sequence: 16 },
+  ];
+
+  const savedDivisions = new Map<string, string>();
+
+  for (const division of bahamasDivisions) {
+    const savedDivision = await prisma.administrativeDivision.upsert({
+      where: {
+        countryId_slug: {
+          countryId: bahamas.id,
+          slug: division.slug,
+        },
+      },
+      update: {
+        name: division.name,
+        code: division.code,
+        type: "ISLAND",
+        sequence: division.sequence,
+        status: "ACTIVE",
+      },
+      create: {
+        countryId: bahamas.id,
+        name: division.name,
+        slug: division.slug,
+        code: division.code,
+        type: "ISLAND",
+        sequence: division.sequence,
+        status: "ACTIVE",
+      },
+    });
+
+    savedDivisions.set(division.slug, savedDivision.id);
+  }
+  const bahamasLocalities: BahamasLocalitySeed[] = [
+    {
+      divisionSlug: "new-providence",
+      name: "Nassau",
+      slug: "nassau",
+      type: "CITY",
+    },
+    {
+      divisionSlug: "grand-bahama",
+      name: "Freeport",
+      slug: "freeport",
+      type: "CITY",
+    },
+    {
+      divisionSlug: "eleuthera",
+      name: "Governor's Harbour",
+      slug: "governors-harbour",
+      type: "SETTLEMENT",
+    },
+    {
+      divisionSlug: "eleuthera",
+      name: "Rock Sound",
+      slug: "rock-sound",
+      type: "SETTLEMENT",
+    },
+    {
+      divisionSlug: "eleuthera",
+      name: "North Eleuthera",
+      slug: "north-eleuthera",
+      type: "DISTRICT",
+    },
+  ];
+
+  for (const locality of bahamasLocalities) {
+    const administrativeDivisionId = savedDivisions.get(locality.divisionSlug);
+
+    if (!administrativeDivisionId) {
+      continue;
+    }
+
+    await prisma.locality.upsert({
+      where: {
+        countryId_slug: {
+          countryId: bahamas.id,
+          slug: locality.slug,
+        },
+      },
+      update: {
+        administrativeDivisionId,
+        name: locality.name,
+        type: locality.type,
+        status: "ACTIVE",
+      },
+      create: {
+        countryId: bahamas.id,
+        administrativeDivisionId,
+        name: locality.name,
+        slug: locality.slug,
+        type: locality.type,
         status: "ACTIVE",
       },
     });
