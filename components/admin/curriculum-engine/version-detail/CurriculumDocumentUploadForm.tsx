@@ -73,7 +73,7 @@ export default function CurriculumDocumentUploadForm({
 
     startTransition(async () => {
       try {
-        const response = await fetch("/api/curriculum-documents", {
+        const response = await fetch("/api/curriculum-documents/upload", {
           method: "POST",
           body: formData,
         });
@@ -81,6 +81,7 @@ export default function CurriculumDocumentUploadForm({
         const result = (await response.json()) as {
           success: boolean;
           message: string;
+          documentId?: string;
         };
 
         if (!response.ok || !result.success) {

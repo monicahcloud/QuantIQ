@@ -1,9 +1,5 @@
-import type { CurriculumExtraction } from "@/lib/nova/schemas/curriculum-extraction";
-
 import { inngest } from "@/lib/inngest/client";
-
-type CurriculumNode =
-  CurriculumExtraction["frameworks"][number]["packages"][number]["nodes"][number];
+import prisma from "@/lib/prisma";
 
 export const processCurriculumImport = inngest.createFunction(
   {
@@ -15,19 +11,116 @@ export const processCurriculumImport = inngest.createFunction(
     retries: 3,
   },
   async ({ event, step }) => {
-    const { importRunId } = event.data;
+    const importRunId = event.data.importRunId as string;
 
-    await step.run("log-import-request", async () => {
-      console.log("Processing curriculum import:", importRunId);
+    const importRun = await step.run("load-import-run", async () => {
+      return prisma.curriculumImportRun.findUnique({
+        where: {
+          id: importRunId,
+        },
+        include: {
+          curriculumDocument: true,
+          curriculumVersion: {
+            include: {
+              country: true,
+            },
+          },
+          extraction: true,
+        },
+      });
+    });
+
+    if (!importRun) {
+      throw new Error(`Curriculum import run ${importRunId} was not found.`);
+    }
+
+    await step.run("mark-import-processing", async () => {
+      await prisma.$transaction([
+        prisma.curriculumImportRun.update({
+          where: {
+            id: importRun.id,
+          },
+          data: {
+            status: "PROCESSING",
+            startedAt: new Date(),
+            completedAt: null,
+            errorMessage: null,
+          },
+        }),
+
+        prisma.curriculumExtraction.upsert({
+          where: {
+            importRunId: importRun.id,
+          },
+          create: {
+            importRunId: importRun.id,
+            rawJson: {},
+            warnings: [],
+            status: "PENDING",
+          },
+          update: {
+            status: "PENDING",
+          },
+        }),
+      ]);
+    });
+
+    await step.run("confirm-import-pipeline", async () => {
+      console.info("[Curriculum Import]", {
+        importRunId: importRun.id,
+        documentId: importRun.curriculumDocument.id,
+        documentTitle: importRun.curriculumDocument.title,
+        fileUrl: importRun.curriculumDocument.fileUrl,
+        version: importRun.curriculumVersion.name,
+        country: importRun.curriculumVersion.country.name,
+      });
+    });
+
+    await step.run("mark-import-review-required", async () => {
+      await prisma.$transaction([
+        prisma.curriculumImportRun.update({
+          where: {
+            id: importRun.id,
+          },
+          data: {
+            status: "REVIEW_REQUIRED",
+            importSummary: {
+              pipelineConnected: true,
+              message:
+                "The import pipeline is connected. Nova parsing is the next step.",
+            },
+            completedAt: new Date(),
+          },
+        }),
+
+        prisma.curriculumExtraction.upsert({
+          where: {
+            importRunId: importRun.id,
+          },
+          create: {
+            importRunId: importRun.id,
+            status: "REVIEW_REQUIRED",
+            rawJson: {
+              pipelineConnected: true,
+              documentTitle: importRun.curriculumDocument.title,
+            },
+            warnings: ["Nova parsing has not been enabled for this test run."],
+          },
+          update: {
+            status: "REVIEW_REQUIRED",
+            rawJson: {
+              pipelineConnected: true,
+              documentTitle: importRun.curriculumDocument.title,
+            },
+            warnings: ["Nova parsing has not been enabled for this test run."],
+          },
+        }),
+      ]);
     });
 
     return {
       success: true,
-      importRunId,
+      importRunId: importRun.id,
     };
   },
 );
-
-export function flattenNodes(nodes: CurriculumNode[]): CurriculumNode[] {
-  return nodes.flatMap((node) => [node, ...flattenNodes(node.children)]);
-}
